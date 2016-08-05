@@ -74,8 +74,6 @@ class Net::HTTP::DigestAuth
   # differently so you may need to set +iis+ to true for such servers.
 
   def auth_header uri, www_authenticate, method, iis = false
-    nonce_count = next_nonce
-
     user     = CGI.unescape uri.user
     password = CGI.unescape uri.password
 
@@ -85,6 +83,12 @@ class Net::HTTP::DigestAuth
 
     params = {}
     challenge.gsub(/(\w+)=("(.*?)"|(\w+))/)  { params[$1] = $4 || $3 }
+
+    unless params['nc'].nil? || params['nc'].empty?
+      @nonce_count = params['nc'].to_i(16)
+    end
+
+    nonce_count = next_nonce
 
     challenge =~ /algorithm="?(.*?)"?([, ]|$)/
 
